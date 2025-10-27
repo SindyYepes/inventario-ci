@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventario CI</title>
+</head>
+<body>
+  <h1>Inventario</h1>
+  <form id="form-item">
+    <input type="text" id="nombre" placeholder="Nombre del producto" required />
+    <input type="number" id="cantidad" placeholder="Cantidad" required />
+    <input type="number" id="precio" placeholder="Precio" required />
+    <button type="submit">Agregar</button>
+  </form>
+
+<h2>Lista de productos</h2>
+<table border="1" id="tablaProductos">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Cantidad</th>
+      <th>Precio</th>
+    </tr>
+  </thead>
+  <tbody id="productosBody"></tbody>
+</table>
+
+  <script src="app.js"></script>
+</body>
+</html>
