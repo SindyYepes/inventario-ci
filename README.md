@@ -5,7 +5,7 @@ Proyecto base para la entrega 1 del módulo de Integración Continua.
 ## 📖 Descripción
 Sistema de inventario simple con:
 - **Backend** en FastAPI + SQLModel + SQLite
-- **Frontend** en HTML + JS servido con Nginx
+- **Frontend** en HTML + JS + CSS servido con Nginx
 - **Contenedores** Docker comunicándose entre sí
 
 ## 🚀 Ejecución
