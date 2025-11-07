@@ -33,3 +33,30 @@ def listar_items():
     with Session(engine) as session:
         items = session.exec(select(Item)).all()
         return items
+
+@app.put("/items/{item_id}")
+def actualizar_item(item_id: int, item: Item):
+    with Session(engine) as session:
+        db_item = session.get(Item, item_id)
+        if not db_item:
+            return {"error": "Item no encontrado"}
+
+        db_item.nombre = item.nombre
+        db_item.cantidad = item.cantidad
+        db_item.precio = item.precio
+
+        session.add(db_item)
+        session.commit()
+        session.refresh(db_item)
+        return db_item
+
+@app.delete("/items/{item_id}")
+def eliminar_item(item_id: int):
+    with Session(engine) as session:
+        db_item = session.get(Item, item_id)
+        if not db_item:
+            return {"error": "Item no encontrado"}
+
+        session.delete(db_item)
+        session.commit()
+        return {"mensaje": "Item eliminado"}

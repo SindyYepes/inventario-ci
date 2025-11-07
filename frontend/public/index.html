@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="index.css" />
   <title>Inventario CI</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
   <h1>Inventario</h1>
   <form id="form-item">
-    <input type="text" id="nombre" placeholder="Nombre del producto" required />
-    <input type="number" id="cantidad" placeholder="Cantidad" required />
-    <input type="number" id="precio" placeholder="Precio" required />
+    <input type="text" id="nombre" placeholder="Nombre del producto" required title="Este campo es obligatorio"/>
+    <input type="number" id="cantidad" placeholder="Cantidad" required title="Este campo es obligatorio"/>
+    <input type="number" id="precio" placeholder="Precio" required title="Este campo es obligatorio"/>
     <button type="submit">Agregar</button>
   </form>
 
@@ -22,6 +23,7 @@
       <th>Nombre</th>
       <th>Cantidad</th>
       <th>Precio</th>
+      <th>Acciones</th>
     </tr>
   </thead>
   <tbody id="productosBody"></tbody>

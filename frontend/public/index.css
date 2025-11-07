@@ -173,3 +173,57 @@ footer{
 	height: 38px;
 	border-radius:0%;
 }
+
+.btn-edit {
+  background-color: #1f6feb;
+  border: none;
+  padding: 6px 12px;
+  margin-right: 5px;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-edit:hover {
+  background-color: #275fca;
+}
+
+.btn-delete {
+  background-color: #d12323;
+  border: none;
+  padding: 6px 12px;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  background-color: #9c1a1a;
+}
+
+/* Centrar la tabla */
+#tablaProductos {
+  margin: 30px auto;
+  width: 80%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.15);
+}
+
+/* Encabezados */
+#tablaProductos th {
+  background: #f4f4f4;
+  padding: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Celdas */
+#tablaProductos td {
+  padding: 12px;
+  border-top: 1px solid #e2e2e2;
+  text-align: center;
+}
