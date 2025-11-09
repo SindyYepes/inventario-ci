@@ -7,6 +7,7 @@ Sistema de inventario simple con:
 - **Backend** en FastAPI + SQLModel + SQLite
 - **Frontend** en HTML + JS + CSS servido con Nginx
 - **Contenedores** Docker comunicándose entre sí
+- **Jenkis** CI/CD
 
 ## 🚀 Ejecución
 
@@ -16,4 +17,4 @@ docker-compose up --build
 
 - Frontend: http://localhost:8080  
 - Backend API: http://localhost:8000/docs
-
+- Jenkis: http://localhost:8081
