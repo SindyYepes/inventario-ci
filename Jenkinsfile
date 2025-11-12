@@ -3,7 +3,7 @@ pipeline {
 
   parameters {
     choice(name: 'OPERATION', description: '¿Qué quieres hacer?', choices: ['down','restart','test','clean'])
-    choice(name: 'SERVICE', description: 'Servicio objetivo (para restart)', choices: ['backend','frontend','jenkins','all'])
+    choice(name: 'SERVICE', description: 'Servicio objetivo (para restart)', choices: ['backend','frontend','all'])  // ← quita jenkins
     string(name: 'TAIL', defaultValue: '200', description: 'Líneas de logs a mostrar (solo en logs)')
   }
 
@@ -14,16 +14,12 @@ pipeline {
 
   options {
     disableConcurrentBuilds()
-    // Si dejas tu stage "Checkout", activa esto:
-    // skipDefaultCheckout(true)
+    // skipDefaultCheckout(true)  // opcional
   }
 
   stages {
     stage('Checkout') {
-      steps {
-        checkout scm
-        sh 'ls -la'
-      }
+      steps { checkout scm; sh 'ls -la' }
     }
 
     stage('Docker Info') {
@@ -31,7 +27,7 @@ pipeline {
         sh '''
           docker version
           ${COMPOSE} version || true
-          ${COMPOSE} ps || true
+          ${COMPOSE} ${COMPOSE_FILES} ps || true
         '''
       }
     }
@@ -39,25 +35,27 @@ pipeline {
     stage('Run Operation') {
       steps {
         script {
+          // helper: lista de servicios objetivo en CI
+          def targets = 'backend frontend'
+
           switch (params.OPERATION) {
             case 'down':
-              sh "${COMPOSE} ${COMPOSE_FILES} down"
+              sh "${COMPOSE} ${COMPOSE_FILES} down"   // esto baja todo el stack de CI (backend/frontend/red/vols)
               break
+
             case 'restart':
-              def svc = params.SERVICE == 'all' ? '' : params.SERVICE
-              sh """
-                if [ -n "${svc}" ]; then
-                  ${COMPOSE} ${COMPOSE_FILES} restart ${svc}
-                else
-                  ${COMPOSE} ${COMPOSE_FILES} restart
-                fi
-                ${COMPOSE} ${COMPOSE_FILES} ps
-              """
+              if (params.SERVICE == 'all') {
+                sh "${COMPOSE} ${COMPOSE_FILES} restart ${targets}"
+              } else {
+                sh "${COMPOSE} ${COMPOSE_FILES} restart ${params.SERVICE}"
+              }
+              sh "${COMPOSE} ${COMPOSE_FILES} ps"
               break
+
             case 'test':
               sh '''
                 set -e
-                ${COMPOSE} ${COMPOSE_FILES} up -d --build
+                ${COMPOSE} ${COMPOSE_FILES} up -d --build backend frontend
                 echo "Esperando backend..."
                 for i in $(seq 1 30); do
                   if curl -sSf http://localhost:8000/health >/dev/null; then
@@ -68,25 +66,21 @@ pipeline {
                     echo "Backend no respondió a tiempo" >&2; exit 1
                   fi
                 done
-
-                echo "GET /items"
                 curl -sSf http://localhost:8000/items
-
-                echo "POST /items (semilla de prueba)"
                 curl -sSf -X POST http://localhost:8000/items \
                   -H 'Content-Type: application/json' \
                   -d '{"nombre":"Lapicero","cantidad":10,"precio":1.2,"activo":true}'
-
-                echo "GET /items (validando inserción)"
                 curl -sSf http://localhost:8000/items
               '''
               break
+
             case 'clean':
               sh '''
                 ${COMPOSE} ${COMPOSE_FILES} down -v || true
                 docker system prune -af || true
               '''
               break
+
             default:
               error "Operación no reconocida: ${params.OPERATION}"
           }
@@ -96,8 +90,6 @@ pipeline {
   }
 
   post {
-    always {
-      sh "${COMPOSE} ${COMPOSE_FILES} ps || true"
-    }
+    always { sh "${COMPOSE} ${COMPOSE_FILES} ps || true" }
   }
 }
