@@ -27,14 +27,21 @@ services:
       - app-network
 
   jenkins:
-    image: jenkins/jenkins:lts-jdk21      # Jenkins con Java 21
+    build: ./jenkins 
     container_name: jenkins
     ports:
-      - "8081:8080"                       # Web de Jenkins → http://localhost:8081
-    volumes:
-      - jenkins_home:/var/jenkins_home    # Guardar la configuración y jobs
+      - "8081:8080"
+      # - "50000:50000"   # opcional: agentes JNLP
     environment:
-      - TZ=America/Bogota                 # zona horaria
+      - TZ=${TZ}
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - ADMIN_USER=${ADMIN_USER}
+      - ADMIN_PASS=${ADMIN_PASS}
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      # Monta el script de bootstrap para primer arranque
+      - ./jenkins/bootstrap.groovy:/usr/share/jenkins/ref/init.groovy.d/bootstrap.groovy:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     networks:
       - app-network

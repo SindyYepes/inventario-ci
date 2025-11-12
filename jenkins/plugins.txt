@@ -1,0 +1,11 @@
+workflow-aggregator
+git
+git-client
+pipeline-model-definition
+pipeline-stage-view
+github
+github-branch-source
+credentials
+credentials-binding
+docker-workflow
+job-dsl
