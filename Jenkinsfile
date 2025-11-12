@@ -2,31 +2,29 @@ pipeline {
   agent any
 
   parameters {
-    choice(name: 'OPERATION', description: '¿Qué quieres hacer?', choices: [
-      'build',        // Construir imágenes
-      'up',           // Levantar servicios en segundo plano
-      'down',         // Parar y eliminar contenedores
-      'restart',      // Reiniciar un servicio
-      'test',         // Probar /health y CRUD mínimo
-      'clean'         // Limpiar imágenes y volúmenes huérfanos
-    ])
-    choice(name: 'SERVICE', description: 'Servicio objetivo (para restart/logs)', choices: [
-      'backend', 'frontend', 'jenkins', 'all'
-    ])
+    choice(name: 'OPERATION', description: '¿Qué quieres hacer?', choices: ['build','up','down','restart','test','clean'])
+    choice(name: 'SERVICE', description: 'Servicio objetivo (para restart)', choices: ['backend','frontend','jenkins','all'])
     string(name: 'TAIL', defaultValue: '200', description: 'Líneas de logs a mostrar (solo en logs)')
   }
 
   environment {
-    COMPOSE = 'docker compose'  // usa el plugin v2
+    COMPOSE = 'docker compose'
+    COMPOSE_FILES = '-f docker-compose.yml -f docker-compose.ci.yml'
   }
 
   options {
-    timestamps()
-    ansiColor('xterm')
     disableConcurrentBuilds()
+    // Si dejas tu stage "Checkout", activa esto:
+    // skipDefaultCheckout(true)
   }
 
   stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+        sh 'ls -la'
+      }
+    }
 
     stage('Docker Info') {
       steps {
@@ -43,42 +41,32 @@ pipeline {
         script {
           switch (params.OPERATION) {
             case 'build':
-              sh """
-                ${COMPOSE} build --no-cache
-              """
+              sh "${COMPOSE} ${COMPOSE_FILES} build --no-cache"
               break
-
             case 'up':
               sh """
-                ${COMPOSE} up -d --build
-                ${COMPOSE} ps
+                ${COMPOSE} ${COMPOSE_FILES} up -d --build
+                ${COMPOSE} ${COMPOSE_FILES} ps
               """
               break
-
             case 'down':
-              sh """
-                ${COMPOSE} down
-              """
+              sh "${COMPOSE} ${COMPOSE_FILES} down"
               break
-
             case 'restart':
               def svc = params.SERVICE == 'all' ? '' : params.SERVICE
               sh """
                 if [ -n "${svc}" ]; then
-                  ${COMPOSE} restart ${svc}
+                  ${COMPOSE} ${COMPOSE_FILES} restart ${svc}
                 else
-                  ${COMPOSE} restart
+                  ${COMPOSE} ${COMPOSE_FILES} restart
                 fi
-                ${COMPOSE} ps
+                ${COMPOSE} ${COMPOSE_FILES} ps
               """
               break
-
             case 'test':
-              // Prueba básica del backend
               sh '''
                 set -e
-                # Asegura que esté arriba
-                ${COMPOSE} up -d --build
+                ${COMPOSE} ${COMPOSE_FILES} up -d --build
                 echo "Esperando backend..."
                 for i in $(seq 1 30); do
                   if curl -sSf http://localhost:8000/health >/dev/null; then
@@ -91,25 +79,23 @@ pipeline {
                 done
 
                 echo "GET /items"
-                curl -sSf http://localhost:8000/items | jq '.'
+                curl -sSf http://localhost:8000/items
 
-                echo "POST /items (semilla temporal de prueba)"
+                echo "POST /items (semilla de prueba)"
                 curl -sSf -X POST http://localhost:8000/items \
                   -H 'Content-Type: application/json' \
-                  -d '{"nombre":"Lapicero","cantidad":10,"precio":1.2,"activo":true}' | jq '.'
+                  -d '{"nombre":"Lapicero","cantidad":10,"precio":1.2,"activo":true}'
 
                 echo "GET /items (validando inserción)"
-                curl -sSf http://localhost:8000/items | jq '.'
+                curl -sSf http://localhost:8000/items
               '''
               break
-
             case 'clean':
               sh '''
-                ${COMPOSE} down -v || true
+                ${COMPOSE} ${COMPOSE_FILES} down -v || true
                 docker system prune -af || true
               '''
               break
-
             default:
               error "Operación no reconocida: ${params.OPERATION}"
           }
@@ -120,10 +106,7 @@ pipeline {
 
   post {
     always {
-      script {
-        // Muestra estado final; no falla el build por esto
-        sh "${COMPOSE} ps || true"
-      }
+      sh "${COMPOSE} ${COMPOSE_FILES} ps || true"
     }
   }
 }
