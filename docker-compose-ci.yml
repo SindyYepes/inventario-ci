@@ -1,0 +1,10 @@
+services:
+  backend:
+    profiles: ["dev"]
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/data:/app/data
+  frontend:
+    profiles: ["dev"]
+    volumes:
+      - ./frontend/public:/usr/share/nginx/html
