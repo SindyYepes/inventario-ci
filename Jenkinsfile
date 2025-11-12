@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   parameters {
-    choice(name: 'OPERATION', description: '¿Qué quieres hacer?', choices: ['build','up','down','restart','test','clean'])
+    choice(name: 'OPERATION', description: '¿Qué quieres hacer?', choices: ['down','restart','test','clean'])
     choice(name: 'SERVICE', description: 'Servicio objetivo (para restart)', choices: ['backend','frontend','jenkins','all'])
     string(name: 'TAIL', defaultValue: '200', description: 'Líneas de logs a mostrar (solo en logs)')
   }
@@ -40,15 +40,6 @@ pipeline {
       steps {
         script {
           switch (params.OPERATION) {
-            case 'build':
-              sh "${COMPOSE} ${COMPOSE_FILES} build --no-cache"
-              break
-            case 'up':
-              sh """
-                ${COMPOSE} ${COMPOSE_FILES} up -d --build
-                ${COMPOSE} ${COMPOSE_FILES} ps
-              """
-              break
             case 'down':
               sh "${COMPOSE} ${COMPOSE_FILES} down"
               break
@@ -110,4 +101,3 @@ pipeline {
     }
   }
 }
-
