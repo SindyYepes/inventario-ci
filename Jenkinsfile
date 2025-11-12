@@ -27,12 +27,6 @@ pipeline {
   }
 
   stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-        sh 'ls -la'
-      }
-    }
 
     stage('Docker Info') {
       steps {
