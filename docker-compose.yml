@@ -2,7 +2,10 @@ version: '3.8'
 
 services:
   backend:
-    build: ./backend
+    build: 
+     context: ./backend
+     args:
+      DOCKER_GID: ${DOCKER_GID}
     container_name: backend
     environment:
       - DATABASE_URL=sqlite:///./data/data.db
