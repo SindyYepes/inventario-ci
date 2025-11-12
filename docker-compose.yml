@@ -1,11 +1,8 @@
-version: '3.8'
-
 services:
   backend:
-    build: 
-     context: ./backend
-     args:
-      DOCKER_GID: ${DOCKER_GID}
+    profiles: ["app"]            
+    build:
+      context: ./backend
     container_name: backend
     environment:
       - DATABASE_URL=sqlite:///./data/data.db
@@ -20,6 +17,7 @@ services:
       - app-network
 
   frontend:
+    profiles: ["app"]            
     build: ./frontend
     container_name: frontend
     ports:
@@ -30,7 +28,11 @@ services:
       - app-network
 
   jenkins:
-    build: ./jenkins 
+    profiles: ["jenkins"]       
+    build:
+      context: ./jenkins
+      args:
+        DOCKER_GID: ${DOCKER_GID}    
     container_name: jenkins
     ports:
       - "8081:8080"
@@ -42,13 +44,11 @@ services:
       - ADMIN_PASS=${ADMIN_PASS}
     volumes:
       - jenkins_home:/var/jenkins_home
-      # Monta el script de bootstrap para primer arranque
       - ./jenkins/bootstrap.groovy:/usr/share/jenkins/ref/init.groovy.d/bootstrap.groovy:ro
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     networks:
       - app-network
-
 
 networks:
   app-network:
