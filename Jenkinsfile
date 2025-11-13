@@ -69,15 +69,64 @@ pipeline {
 
           switch (params.OPERATION) {
 
-            case 'up':
-              echo "Levantando stack CI (build + up -d)..."
+          case 'up':
+            echo "Levantando stack CI (build + up -d)..."
+            sh """
+              set -e
+              ${baseCmd} up -d --build
+              ${baseCmd} ps
+            """
+
+            // 🔍 helper para saber si el backend está corriendo
+            def isBackendRunning = {
+              return sh(
+                script: "${baseCmd} ps -q backend",
+                returnStdout: true
+              ).trim()
+            }
+
+            // 🕒 pequeña espera inicial
+            sleep 5
+
+            if (!isBackendRunning()) {
+              echo "⚠️ Backend no está corriendo tras el primer up. Haciendo un intento de restart..."
+
+              // Intento de restart
               sh """
                 set -e
-                ${baseCmd} up -d --build
-                ${baseCmd} ps
+                ${baseCmd} restart backend || true
+                sleep 5
+                ${baseCmd} ps || true
               """
-              break
 
+              // Volvemos a comprobar
+              if (!isBackendRunning()) {
+                echo "❌ Backend sigue caído después del restart. Mostrando info de debug..."
+
+                // Logs y estado del contenedor
+                sh """
+                  echo '>>> docker ps -a (filtrando backend)...'
+                  docker ps -a --format '{{.Names}}\t{{.Status}}\t{{.Image}}' | grep backend || true
+
+                  echo ''
+                  echo '>>> Logs del backend (últimas ${params.TAIL} líneas)...'
+                  ${baseCmd} logs backend --tail=${params.TAIL} || true
+
+                  echo ''
+                  echo '>>> Inspect del contenedor backend (si existe)...'
+                  docker inspect gestor-operaciones-ci-backend-1 || true
+                """
+
+                error "Backend no se pudo levantar en CI (ver logs anteriores)."
+              } else {
+                echo "✅ Backend quedó corriendo después del restart."
+              }
+
+            } else {
+              echo "✅ Backend está corriendo después del primer up."
+            }
+
+            break
             case 'down':
               echo "Bajando stack CI (down --remove-orphans)..."
               sh """
