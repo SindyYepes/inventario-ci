@@ -1,7 +1,12 @@
 services:
   backend:
-    profiles: ["dev"]
+    profiles: ["app"]
+
     volumes: []
+
+    environment:
+      - DATABASE_URL=sqlite:///./data.db
+
   frontend:
-    profiles: ["dev"]
+    profiles: ["app"]
     volumes: []
