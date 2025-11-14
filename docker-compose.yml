@@ -9,6 +9,8 @@ services:
       - UVICORN_PORT=8000
     ports:
       - "8000:8000"
+    volumes:
+      - backend_data:/app/data 
     networks:
       - app-network
 
