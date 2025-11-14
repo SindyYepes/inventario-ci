@@ -19,16 +19,12 @@ pipeline {
     )
   }
 
-  environment {
-    // Comando base de docker compose
-    COMPOSE       = 'docker compose'
-    COMPOSE_FILES = '-f docker-compose.yml -f docker-compose.ci.yml'
-    PROFILE       = '--profile app'
-
-    // 🔹 Nombre de proyecto fijo para el stack que maneja Jenkins
-    // Esto lo diferencia del proyecto "inventario-ci" donde corre tu Jenkins padre
-    PROJECT       = '-p gestor-operaciones-ci'
-  }
+environment {
+  COMPOSE       = 'docker compose'
+  COMPOSE_FILES = '-f docker-compose.yml -f docker-compose.ci.yml'
+  PROFILE       = '--profile app'
+  PROJECT       = '-p gestor-operaciones-ci'
+}
 
   options {
     disableConcurrentBuilds()
