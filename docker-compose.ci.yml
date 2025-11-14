@@ -1,12 +1,7 @@
+# docker-compose.ci.yml
 services:
   backend:
-    profiles: ["app"]
-
     volumes: []
-
-    environment:
-      - DATABASE_URL=sqlite:///./data.db
-
   frontend:
-    profiles: ["app"]
     volumes: []
+
