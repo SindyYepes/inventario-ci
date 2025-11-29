@@ -10,7 +10,6 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/app:/app
       - ./backend/data:/app/data 
     networks:
       - app-network
