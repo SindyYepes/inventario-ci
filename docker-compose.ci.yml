@@ -1,7 +1,14 @@
-# docker-compose.ci.yml
 services:
   backend:
+    command: >
+      sh -c "pytest -q"
     volumes: []
-  frontend:
-    volumes: []
+    environment:
+      - ENV=ci
 
+  frontend:
+    command: >
+      sh -c "npm install && npm run test -- --watch=false --browsers=ChromeHeadless"
+    volumes: []
+    environment:
+      - ENV=ci

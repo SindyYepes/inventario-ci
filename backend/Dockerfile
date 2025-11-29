@@ -7,14 +7,19 @@ WORKDIR /app
 
 RUN mkdir -p /app/data
 
-COPY app/requirements.txt .
+# dependencias
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app/ .
+# app
+COPY app/ ./app
 
-# robustez para imports relativos
+# tests (para que Jenkins pueda ejecutarlos dentro del contenedor)
+COPY tests/ ./tests
+
+# robustez para imports
 ENV PYTHONPATH=/app
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
